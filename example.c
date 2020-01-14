@@ -5,13 +5,16 @@
 #include<asm/uaccess.h>
 #define BUF_LEN 80		/* Max length of the message from the device */
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("TESS HEREEE");
+/* Module info */
+MODULE_LICENSE("GPL"); /* GPL licence to avoid kernel taint*/ 
+MODULE_AUTHOR("Tesnime Welhazi");
 MODULE_DESCRIPTION("A simple example Linux module.");
 MODULE_VERSION("0.01");
 
+/*Major is the identifier of our driver*/ 
 static int Major; 
 
+/* prototypes, could also be seperated into an .h file */
 static int example_init(void);
 static void example_exit(void);
 
@@ -20,6 +23,7 @@ int simple_char_driver_close(struct inode *, struct file *);
 ssize_t simple_char_driver_read(struct file *, char *, size_t, loff_t *);
 ssize_t simple_char_driver_write(struct file *, const char *, size_t, loff_t *);
 
+/* defined in linux/fs.h holds pointers to functions defined by the driver that perform various operations on the device. */ 
 struct file_operations fops = {
 	
 	.read    = simple_char_driver_read,
@@ -28,16 +32,17 @@ struct file_operations fops = {
 	.release = simple_char_driver_close
 };
 
+/* counter variables for how many times our driver opened and closed */
 int openCount = 0;
 int closeCount = 0;
-
-/* following tuto */
 
 static char msg[BUF_LEN];	/* The msg the device will give when asked */
 static char *msg_Ptr;
 
+/* init function, used when adding the driver to the system */
 static int __init example_init(void) {
  
+	/*register_chrdev assigns a major number on it's own if you put "0" */ 
  Major = register_chrdev(0, "example", &fops);
  printk(KERN_INFO "Hello, World!\n");
  printk(KERN_INFO "my example device drivers major is: %d\n", Major);
@@ -50,12 +55,13 @@ static int __init example_init(void) {
  return 0;
 }
 
+/* called when module is removed */
 static void __exit example_exit(void) {
  printk(KERN_INFO "Goodbye, World!\n");
  unregister_chrdev(Major, "example");
 }
 
-
+/*Called when a process tries to open the device file in my example with cat <device file name> */
 
 int simple_char_driver_open (struct inode *pinode, struct file *pfile)
 {
@@ -118,7 +124,3 @@ int simple_char_driver_close (struct inode *pinode, struct file *pfile)
 	return 0;
 }
 
-
-
-module_init(example_init);
-module_exit(example_exit);
