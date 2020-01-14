@@ -2,7 +2,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include<linux/fs.h>
-#include<asm/uaccess.h>
+#include<asm/uaccess.h> /* for put_user */
 #define BUF_LEN 80		/* Max length of the message from the device */
 
 /* Module info */
@@ -55,7 +55,7 @@ static int __init example_init(void) {
  return 0;
 }
 
-/* called when module is removed */
+/* called when module is removed. we free the assigned major from our driver */
 static void __exit example_exit(void) {
  printk(KERN_INFO "Goodbye, World!\n");
  unregister_chrdev(Major, "example");
@@ -69,7 +69,7 @@ int simple_char_driver_open (struct inode *pinode, struct file *pfile)
 	openCount++;
 	printk(KERN_ALERT "OPENING Simple Character Driver. It has been opened %d times\n", openCount);
 
-	sprintf(msg, "bonjour  mp2l\n");
+	sprintf(msg, "bonjour mp2l\n");
 	msg_Ptr = msg;
 	return 0;
 }
